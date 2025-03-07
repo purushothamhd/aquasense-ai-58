@@ -1,9 +1,8 @@
-
 import { SensorData } from "@/services/sensorApi";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Thermometer, Droplet, Waves, Flask } from "lucide-react";
+import { Thermometer, Droplet, Waves, Beaker } from "lucide-react";
 
 interface SensorReadingsProps {
   data: SensorData | null;
@@ -70,16 +69,12 @@ export const SensorReadings = ({ data, isLoading }: SensorReadingsProps) => {
   const getProgressValue = (value: number, type: keyof SensorData): number => {
     switch (type) {
       case 'pH':
-        // Map pH 0-14 to 0-100%, with 7 being 50%
         return Math.min(Math.max((value / 14) * 100, 0), 100);
       case 'tds':
-        // Map TDS 0-1000 to 0-100%
         return Math.min(Math.max((value / 1000) * 100, 0), 100);
       case 'turbidity':
-        // Map turbidity 0-20 to 0-100%
         return Math.min(Math.max((value / 20) * 100, 0), 100);
       case 'temperature':
-        // Map temp 0-40 to 0-100%
         return Math.min(Math.max((value / 40) * 100, 0), 100);
       default:
         return 0;
@@ -87,7 +82,7 @@ export const SensorReadings = ({ data, isLoading }: SensorReadingsProps) => {
   };
 
   const sensorConfig = [
-    { key: 'pH' as keyof SensorData, label: 'pH Level', icon: <Flask className="h-5 w-5" /> },
+    { key: 'pH' as keyof SensorData, label: 'pH Level', icon: <Beaker className="h-5 w-5" /> },
     { key: 'tds' as keyof SensorData, label: 'Total Dissolved Solids', icon: <Droplet className="h-5 w-5" /> },
     { key: 'turbidity' as keyof SensorData, label: 'Turbidity', icon: <Waves className="h-5 w-5" /> },
     { key: 'temperature' as keyof SensorData, label: 'Temperature', icon: <Thermometer className="h-5 w-5" /> },
