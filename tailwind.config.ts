@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -84,11 +85,32 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'swim': {
+					'0%': { transform: 'translateX(-50px) scaleX(1)' },
+					'50%': { transform: 'translateX(calc(100% + 50px)) scaleX(1)' },
+					'51%': { transform: 'translateX(calc(100% + 50px)) scaleX(-1)' },
+					'100%': { transform: 'translateX(-50px) scaleX(-1)' }
+				},
+				'swim-reverse': {
+					'0%': { transform: 'translateX(calc(100% + 50px)) scaleX(-1)' },
+					'50%': { transform: 'translateX(-50px) scaleX(-1)' },
+					'51%': { transform: 'translateX(-50px) scaleX(1)' },
+					'100%': { transform: 'translateX(calc(100% + 50px)) scaleX(1)' }
+				},
+				'rise': {
+					'0%': { transform: 'translateY(0) scale(1)' },
+					'100%': { transform: 'translateY(-250px) scale(0.5)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'swim-happy': 'swim 15s infinite linear',
+				'swim-slow': 'swim 25s infinite linear',
+				'swim-distressed': 'swim 10s infinite ease-in-out',
+				'swim-reverse': 'swim-reverse 20s infinite linear',
+				'rise': 'rise 3s linear'
 			}
 		}
 	},
