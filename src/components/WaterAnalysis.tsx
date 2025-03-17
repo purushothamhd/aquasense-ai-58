@@ -3,9 +3,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SensorData } from "@/services/sensorApi";
-import { analyzeWaterQuality, WaterAnalysis as WaterAnalysisType } from "@/utils/waterQualityUtils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Beaker, ThumbsUp, ThumbsDown, Lightbulb } from "lucide-react";
+import { Beaker, ThumbsUp, ThumbsDown, Lightbulb, Heart } from "lucide-react";
+import { analyzeSensorDataWithGemini, GeminiAnalysisResponse } from "@/services/geminiApi";
+import { toast } from "@/hooks/use-toast";
 
 interface WaterAnalysisProps {
   sensorData: SensorData;
@@ -14,14 +15,24 @@ interface WaterAnalysisProps {
 }
 
 export const WaterAnalysis = ({ sensorData, onAnalyze, isAnalyzing }: WaterAnalysisProps) => {
-  const [analysis, setAnalysis] = useState<WaterAnalysisType | null>(null);
+  const [analysis, setAnalysis] = useState<GeminiAnalysisResponse | null>(null);
   
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     onAnalyze();
-    // Simulate AI processing time
-    setTimeout(() => {
-      setAnalysis(analyzeWaterQuality(sensorData));
-    }, 1500);
+    setAnalysis(null);
+    
+    try {
+      // Call the Gemini API for analysis
+      const geminiAnalysis = await analyzeSensorDataWithGemini(sensorData);
+      setAnalysis(geminiAnalysis);
+    } catch (error) {
+      console.error("Failed to analyze water:", error);
+      toast({
+        title: "Analysis Failed",
+        description: "Could not analyze water quality. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
   
   return (
@@ -35,7 +46,7 @@ export const WaterAnalysis = ({ sensorData, onAnalyze, isAnalyzing }: WaterAnaly
         {!analysis ? (
           <div className="flex flex-col items-center">
             <p className="text-center text-muted-foreground mb-4">
-              Press the button below to analyze your water quality and receive recommendations.
+              Press the button below to analyze your water quality using Gemini AI and receive recommendations.
             </p>
             <Button 
               onClick={handleAnalyze} 
@@ -67,6 +78,13 @@ export const WaterAnalysis = ({ sensorData, onAnalyze, isAnalyzing }: WaterAnaly
               <div className="mt-1 text-sm font-medium capitalize text-center">
                 {analysis.status} Water Quality
               </div>
+              
+              <div className="mt-4 flex items-center justify-center gap-2 text-sm font-medium">
+                <Heart className={`h-4 w-4 ${analysis.isHealthy ? 'text-green-500' : 'text-red-500'}`} />
+                <span className={analysis.isHealthy ? 'text-green-500' : 'text-red-500'}>
+                  {analysis.isHealthy ? 'Healthy for consumption' : 'Not recommended for consumption'}
+                </span>
+              </div>
             </div>
             
             <Tabs defaultValue="pros">
@@ -79,6 +97,9 @@ export const WaterAnalysis = ({ sensorData, onAnalyze, isAnalyzing }: WaterAnaly
                 </TabsTrigger>
                 <TabsTrigger value="recommendations" className="flex-1">
                   <Lightbulb className="h-4 w-4 mr-1" /> Tips
+                </TabsTrigger>
+                <TabsTrigger value="health" className="flex-1">
+                  <Heart className="h-4 w-4 mr-1" /> Health
                 </TabsTrigger>
               </TabsList>
               
@@ -123,6 +144,21 @@ export const WaterAnalysis = ({ sensorData, onAnalyze, isAnalyzing }: WaterAnaly
                     ))
                   ) : (
                     <li className="text-muted-foreground">No recommendations needed!</li>
+                  )}
+                </ul>
+              </TabsContent>
+              
+              <TabsContent value="health" className="mt-4">
+                <ul className="space-y-2">
+                  {analysis.healthImplications.length > 0 ? (
+                    analysis.healthImplications.map((implication, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className={`${analysis.isHealthy ? 'text-green-500' : 'text-red-500'} mr-2`}>•</span>
+                        <span>{implication}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-muted-foreground">No specific health implications noted.</li>
                   )}
                 </ul>
               </TabsContent>
