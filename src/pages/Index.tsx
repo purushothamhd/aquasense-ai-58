@@ -8,13 +8,14 @@ import { SensorData, useSensorStore } from "@/services/sensorApi";
 import { toast } from "@/hooks/use-toast";
 import { Droplet } from "lucide-react";
 import { BotpressChat } from "@/components/BotpressChat";
+import { SensorHistory } from "@/components/SensorHistory";
 
 // You should replace this with your actual Botpress bot ID
 // This is a fallback value for demo/development purposes only
 const BOTPRESS_BOT_ID = "a7e86c2a-c9bd-4429-a039-8e9d4b69f938"; 
 
 const Index = () => {
-  const { data, fetchData, updateData, status } = useSensorStore();
+  const { data, history, fetchData, updateData, status } = useSensorStore();
   const [testCount, setTestCount] = useState(() => {
     const saved = localStorage.getItem('waterTestCount');
     return saved ? parseInt(saved, 0) : 0;
@@ -65,6 +66,11 @@ const Index = () => {
         data={status === 'success' ? data : null} 
         isLoading={status === 'loading'} 
       />
+      
+      {/* Sensor History Section */}
+      {status === 'success' && history.length > 0 && (
+        <SensorHistory readings={history} />
+      )}
       
       <Separator className="my-6" />
       

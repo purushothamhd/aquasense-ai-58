@@ -17,13 +17,26 @@ const initialData: SensorData = {
   timestamp: Date.now(),
 };
 
+// Retrieve historical readings from localStorage or use empty array if none exist
+const getStoredReadings = (): SensorData[] => {
+  try {
+    const stored = localStorage.getItem('sensorReadingsHistory');
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error("Failed to parse stored readings:", error);
+    return [];
+  }
+};
+
 // Store for sensor data
 interface SensorStore {
   data: SensorData;
+  history: SensorData[];
   status: 'idle' | 'loading' | 'success' | 'error';
   lastUpdated: number | null;
   fetchData: () => Promise<void>;
   updateData: (newData: SensorData) => void;
+  clearHistory: () => void;
 }
 
 // Mock API call - in production this would connect to your real data source
@@ -39,22 +52,49 @@ const fetchSensorData = async (): Promise<SensorData> => {
 };
 
 // Create store with Zustand
-export const useSensorStore = create<SensorStore>((set) => ({
+export const useSensorStore = create<SensorStore>((set, get) => ({
   data: initialData,
+  history: getStoredReadings(),
   status: 'idle',
   lastUpdated: null,
   fetchData: async () => {
     set({ status: 'loading' });
     try {
       const data = await fetchSensorData();
-      set({ data, status: 'success', lastUpdated: Date.now() });
+      
+      // Add new reading to history, keeping only the last 10
+      const updatedHistory = [data, ...get().history].slice(0, 10);
+      
+      // Save to localStorage
+      localStorage.setItem('sensorReadingsHistory', JSON.stringify(updatedHistory));
+      
+      set({ 
+        data, 
+        history: updatedHistory,
+        status: 'success', 
+        lastUpdated: Date.now() 
+      });
     } catch (error) {
       console.error("Failed to fetch sensor data:", error);
       set({ status: 'error' });
     }
   },
   updateData: (newData) => {
-    set({ data: newData, lastUpdated: Date.now() });
+    // Add new reading to history, keeping only the last 10
+    const updatedHistory = [newData, ...get().history].slice(0, 10);
+    
+    // Save to localStorage
+    localStorage.setItem('sensorReadingsHistory', JSON.stringify(updatedHistory));
+    
+    set({ 
+      data: newData, 
+      history: updatedHistory,
+      lastUpdated: Date.now() 
+    });
+  },
+  clearHistory: () => {
+    localStorage.removeItem('sensorReadingsHistory');
+    set({ history: [] });
   }
 }));
 
