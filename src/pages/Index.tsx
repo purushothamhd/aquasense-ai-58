@@ -4,9 +4,10 @@ import { Separator } from "@/components/ui/separator";
 import { SensorReadings } from "@/components/SensorReadings";
 import { AchievementBadges } from "@/components/AchievementBadges";
 import { WaterAnalysis } from "@/components/WaterAnalysis";
-import { SensorData, useSensorStore, setupWebSocketConnection } from "@/services/sensorApi";
+import { SensorData, useSensorStore } from "@/services/sensorApi";
 import { toast } from "@/hooks/use-toast";
 import { Droplet } from "lucide-react";
+import { BotpressChat } from "@/components/BotpressChat";
 
 const Index = () => {
   const { data, fetchData, updateData, status } = useSensorStore();
@@ -27,17 +28,6 @@ const Index = () => {
       });
     });
   }, [fetchData]);
-  
-  // WebSocket connection to continuously receive sensor data
-  useEffect(() => {
-    const cleanupWebSocket = setupWebSocketConnection((newData: SensorData) => {
-      updateData(newData);
-    });
-    
-    return () => {
-      cleanupWebSocket();
-    };
-  }, [updateData]);
   
   // Handle analyze button click
   const handleAnalyze = () => {
@@ -103,6 +93,9 @@ const Index = () => {
           )}
         </div>
       </div>
+      
+      {/* Botpress Chat Integration */}
+      <BotpressChat botId="YOUR_BOTPRESS_BOT_ID" />
     </div>
   );
 };

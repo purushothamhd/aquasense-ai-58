@@ -1,4 +1,3 @@
-
 import { create } from "zustand";
 
 export interface SensorData {
@@ -27,10 +26,9 @@ interface SensorStore {
   updateData: (newData: SensorData) => void;
 }
 
-// Mock API call - in production this would connect to your Raspberry Pi endpoint
+// Mock API call - in production this would connect to your real data source
 const fetchSensorData = async (): Promise<SensorData> => {
   // For demo purposes, we're returning random values
-  // In production, this would make an actual API call
   return {
     pH: 6.5 + Math.random(),
     tds: 100 + Math.random() * 200,
@@ -98,30 +96,4 @@ export const getWaterQualityStatus = (data: SensorData): 'good' | 'moderate' | '
   if (score >= 10) return 'good';
   if (score >= 6) return 'moderate';
   return 'poor';
-};
-
-// WebSocket connection setup function
-export const setupWebSocketConnection = (updateCallback: (data: SensorData) => void) => {
-  // For demo purposes, we're using mock data and intervals
-  // In production, replace this with actual WebSocket connection to your Pi
-  
-  console.log("Setting up mock WebSocket connection to sensor hub...");
-  
-  const interval = setInterval(() => {
-    const mockData: SensorData = {
-      pH: 6.5 + Math.random(),
-      tds: 100 + Math.random() * 200,
-      turbidity: 1 + Math.random() * 10,
-      temperature: 20 + Math.random() * 10,
-      timestamp: Date.now(),
-    };
-    
-    updateCallback(mockData);
-  }, 5000); // Update every 5 seconds
-  
-  // Return cleanup function
-  return () => {
-    console.log("Closing mock WebSocket connection...");
-    clearInterval(interval);
-  };
 };
