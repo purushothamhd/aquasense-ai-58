@@ -9,6 +9,10 @@ import { toast } from "@/hooks/use-toast";
 import { Droplet } from "lucide-react";
 import { BotpressChat } from "@/components/BotpressChat";
 
+// You should replace this with your actual Botpress bot ID
+// This is a fallback value for demo/development purposes only
+const BOTPRESS_BOT_ID = "a7e86c2a-c9bd-4429-a039-8e9d4b69f938"; 
+
 const Index = () => {
   const { data, fetchData, updateData, status } = useSensorStore();
   const [testCount, setTestCount] = useState(() => {
@@ -95,7 +99,7 @@ const Index = () => {
       </div>
       
       {/* Botpress Chat Integration */}
-      <BotpressChat botId="YOUR_BOTPRESS_BOT_ID" />
+      <BotpressChat botId={BOTPRESS_BOT_ID} />
     </div>
   );
 };
