@@ -73,5 +73,6 @@ export const BotpressChat = ({
     };
   }, [configUrl, theme]);
   
-  return null; // This component doesn't render anything itself
+  // Create a div to render the chat button (instead of returning null)
+  return <div id="bp-web-widget" style={{ zIndex: 9999 }}></div>;
 };
