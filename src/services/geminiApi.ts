@@ -1,4 +1,3 @@
-
 import { SensorData } from "./sensorApi";
 
 export interface GeminiAnalysisResponse {
@@ -9,14 +8,19 @@ export interface GeminiAnalysisResponse {
   recommendations: string[];
   isHealthy: boolean;
   healthImplications: string[];
+  answer?: string;
 }
 
-export const analyzeSensorDataWithGemini = async (sensorData: SensorData): Promise<GeminiAnalysisResponse> => {
+export const analyzeSensorDataWithGemini = async (
+  sensorData: SensorData, 
+  customPrompt?: string
+): Promise<GeminiAnalysisResponse> => {
   try {
     const API_KEY = "YOUR_GEMINI_API_KEY"; // Replace with your actual API key or use environment variables
     const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
     
-    const prompt = `
+    // If we have a custom prompt (for chat), use that instead of the analysis prompt
+    const prompt = customPrompt || `
       Analyze the following water quality parameters and provide a detailed assessment:
       - pH: ${sensorData.pH}
       - Total Dissolved Solids (TDS): ${sensorData.tds} ppm
@@ -64,10 +68,24 @@ export const analyzeSensorDataWithGemini = async (sensorData: SensorData): Promi
     
     const data = await response.json();
     
-    // Extract the JSON string from the Gemini response
+    // Extract the text from the Gemini response
     const responseText = data.candidates[0].content.parts[0].text;
     
-    // Parse the JSON response
+    // If this was a chat request, return the response directly
+    if (customPrompt) {
+      return {
+        qualityScore: 0,
+        status: 'moderate',
+        pros: [],
+        cons: [],
+        recommendations: [],
+        isHealthy: false,
+        healthImplications: [],
+        answer: responseText
+      };
+    }
+    
+    // Otherwise parse the JSON response for water analysis
     const jsonResponse = extractJsonFromString(responseText);
     
     return {
@@ -82,7 +100,7 @@ export const analyzeSensorDataWithGemini = async (sensorData: SensorData): Promi
   } catch (error) {
     console.error("Error analyzing data with Gemini:", error);
     // Fallback to local analysis if Gemini API fails
-    return fallbackAnalysis(sensorData);
+    return fallbackAnalysis(sensorData, customPrompt);
   }
 };
 
@@ -108,8 +126,22 @@ const extractJsonFromString = (text: string): any => {
 };
 
 // Fallback analysis function if the Gemini API fails
-const fallbackAnalysis = (data: SensorData): GeminiAnalysisResponse => {
-  // This is the same logic from the original analyzeWaterQuality function
+const fallbackAnalysis = (data: SensorData, customPrompt?: string): GeminiAnalysisResponse => {
+  // If this was a chat request, provide a simple fallback response
+  if (customPrompt) {
+    return {
+      qualityScore: 0,
+      status: 'moderate',
+      pros: [],
+      cons: [],
+      recommendations: [],
+      isHealthy: false,
+      healthImplications: [],
+      answer: "I'm sorry, I couldn't access my knowledge base right now. Please try again later."
+    };
+  }
+  
+  // Otherwise, fall back to the original analysis logic
   const pros: string[] = [];
   const cons: string[] = [];
   const recommendations: string[] = [];

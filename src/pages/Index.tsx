@@ -7,9 +7,9 @@ import { WaterAnalysis } from "@/components/WaterAnalysis";
 import { SensorData, useSensorStore } from "@/services/sensorApi";
 import { toast } from "@/hooks/use-toast";
 import { Droplet, TestTube } from "lucide-react";
-import { BotpressChat } from "@/components/BotpressChat";
 import { SensorHistory } from "@/components/SensorHistory";
 import { Button } from "@/components/ui/button";
+import { ChatInterface } from "@/components/ChatInterface";
 
 const Index = () => {
   const { data, history, fetchData, updateData, status } = useSensorStore();
@@ -136,7 +136,11 @@ const Index = () => {
         </div>
       </div>
       
-      <BotpressChat configUrl="https://files.bpcontent.cloud/2025/03/17/14/20250317141028-0N0SLFTL.json" />
+      {status === 'success' && (
+        <div className="mt-6">
+          <ChatInterface sensorData={data} />
+        </div>
+      )}
     </div>
   );
 };
