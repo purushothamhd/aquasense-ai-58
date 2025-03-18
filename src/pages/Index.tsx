@@ -6,9 +6,10 @@ import { AchievementBadges } from "@/components/AchievementBadges";
 import { WaterAnalysis } from "@/components/WaterAnalysis";
 import { SensorData, useSensorStore } from "@/services/sensorApi";
 import { toast } from "@/hooks/use-toast";
-import { Droplet } from "lucide-react";
+import { Droplet, TestTube } from "lucide-react";
 import { BotpressChat } from "@/components/BotpressChat";
 import { SensorHistory } from "@/components/SensorHistory";
+import { Button } from "@/components/ui/button";
 
 // You should replace this with your actual Botpress bot ID
 // This is a fallback value for demo/development purposes only
@@ -21,6 +22,7 @@ const Index = () => {
     return saved ? parseInt(saved, 0) : 0;
   });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isReading, setIsReading] = useState(false);
   
   // Initial fetch of sensor data
   useEffect(() => {
@@ -48,11 +50,52 @@ const Index = () => {
     }, 1500);
   };
   
+  // Handle take reading button click
+  const handleTakeReading = () => {
+    setIsReading(true);
+    toast({
+      title: "Taking Reading",
+      description: "Collecting data from sensors...",
+    });
+    
+    // Simulate the reading process
+    setTimeout(() => {
+      fetchData()
+        .then(() => {
+          toast({
+            title: "Reading Complete",
+            description: "New sensor data has been collected.",
+          });
+        })
+        .catch(error => {
+          console.error("Failed to fetch sensor data:", error);
+          toast({
+            title: "Reading Error",
+            description: "Could not collect sensor data. Using simulated values.",
+            variant: "destructive",
+          });
+        })
+        .finally(() => {
+          setIsReading(false);
+        });
+    }, 2000);
+  };
+  
   return (
     <div className="container mx-auto px-4 py-6 space-y-6 max-w-6xl">
-      <div className="flex items-center space-x-2">
-        <Droplet className="h-8 w-8 text-blue-500" />
-        <h1 className="text-2xl font-bold">AquaGuardian</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Droplet className="h-8 w-8 text-blue-500" />
+          <h1 className="text-2xl font-bold">AquaGuardian</h1>
+        </div>
+        <Button 
+          onClick={handleTakeReading} 
+          disabled={isReading || status === 'loading'}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          <TestTube className="mr-2" />
+          {isReading ? "Taking Reading..." : "Take Reading"}
+        </Button>
       </div>
       
       <div className="space-y-2">
@@ -64,7 +107,7 @@ const Index = () => {
       
       <SensorReadings 
         data={status === 'success' ? data : null} 
-        isLoading={status === 'loading'} 
+        isLoading={status === 'loading' || isReading} 
       />
       
       {/* Sensor History Section */}
