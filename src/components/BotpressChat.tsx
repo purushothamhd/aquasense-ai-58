@@ -8,6 +8,16 @@ interface BotpressChatProps {
   theme?: 'light' | 'dark';
 }
 
+// Add proper type declaration for the Botpress webchat global object
+declare global {
+  interface Window {
+    botpressWebChat: {
+      init: (config: { configUrl?: string; botId?: string; theme?: string }) => void;
+      close: () => void;
+    };
+  }
+}
+
 export const BotpressChat = ({ 
   configUrl = "https://files.bpcontent.cloud/2025/03/17/14/20250317141028-0N0SLFTL.json", 
   botId, 
@@ -45,7 +55,6 @@ export const BotpressChat = ({
     // Initialize Botpress webchat when script loads
     script.onload = () => {
       try {
-        // @ts-ignore - Botpress adds window.botpressWebChat
         if (window.botpressWebChat) {
           window.botpressWebChat.init({
             configUrl: configUrl,
@@ -75,7 +84,6 @@ export const BotpressChat = ({
       
       // Close Botpress webchat if it exists
       try {
-        // @ts-ignore
         if (window.botpressWebChat && window.botpressWebChat.close) {
           window.botpressWebChat.close();
         }

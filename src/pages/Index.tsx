@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { SensorReadings } from "@/components/SensorReadings";
@@ -20,7 +19,6 @@ const Index = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isReading, setIsReading] = useState(false);
   
-  // Initial fetch of sensor data
   useEffect(() => {
     fetchData().catch(error => {
       console.error("Failed to fetch initial sensor data:", error);
@@ -32,21 +30,17 @@ const Index = () => {
     });
   }, [fetchData]);
   
-  // Handle analyze button click
   const handleAnalyze = () => {
     setIsAnalyzing(true);
-    // Update test count
     const newCount = testCount + 1;
     setTestCount(newCount);
     localStorage.setItem('waterTestCount', newCount.toString());
     
-    // Simulating analysis completion
     setTimeout(() => {
       setIsAnalyzing(false);
     }, 1500);
   };
   
-  // Handle take reading button click
   const handleTakeReading = () => {
     setIsReading(true);
     toast({
@@ -54,7 +48,6 @@ const Index = () => {
       description: "Collecting data from sensors...",
     });
     
-    // Simulate the reading process
     setTimeout(() => {
       fetchData()
         .then(() => {
@@ -106,7 +99,6 @@ const Index = () => {
         isLoading={status === 'loading' || isReading} 
       />
       
-      {/* Sensor History Section */}
       {status === 'success' && history.length > 0 && (
         <SensorHistory readings={history} />
       )}
@@ -143,7 +135,6 @@ const Index = () => {
         </div>
       </div>
       
-      {/* Updated Botpress Chat Integration with config URL */}
       <BotpressChat configUrl="https://files.bpcontent.cloud/2025/03/17/14/20250317141028-0N0SLFTL.json" />
     </div>
   );
