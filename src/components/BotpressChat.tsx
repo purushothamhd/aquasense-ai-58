@@ -17,8 +17,15 @@ export const BotpressChat = ({
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
+    // Check if script already exists to prevent duplicates
+    const existingScript = document.getElementById('botpress-webchat-script');
+    if (existingScript) {
+      return;
+    }
+    
     // Create script element for Botpress
     const script = document.createElement('script');
+    script.id = 'botpress-webchat-script';
     script.src = "https://cdn.botpress.cloud/webchat/v2.2/inject.js";
     script.async = true;
     
@@ -39,11 +46,16 @@ export const BotpressChat = ({
     script.onload = () => {
       try {
         // @ts-ignore - Botpress adds window.botpressWebChat
-        window.botpressWebChat.init({
-          configUrl: configUrl,
-          theme: theme,
-        });
-        setIsLoaded(true);
+        if (window.botpressWebChat) {
+          window.botpressWebChat.init({
+            configUrl: configUrl,
+            botId: botId,
+            theme: theme,
+          });
+          setIsLoaded(true);
+        } else {
+          throw new Error("Botpress webchat not available");
+        }
       } catch (error) {
         console.error("Error initializing Botpress:", error);
         setHasError(true);
@@ -61,18 +73,18 @@ export const BotpressChat = ({
         document.body.removeChild(script);
       }
       
-      // @ts-ignore - Remove Botpress webchat if it exists
-      if (window.botpressWebChat && window.botpressWebChat.close) {
-        try {
-          // @ts-ignore
+      // Close Botpress webchat if it exists
+      try {
+        // @ts-ignore
+        if (window.botpressWebChat && window.botpressWebChat.close) {
           window.botpressWebChat.close();
-        } catch (error) {
-          console.error("Error closing Botpress:", error);
         }
+      } catch (error) {
+        console.error("Error closing Botpress:", error);
       }
     };
-  }, [configUrl, theme]);
+  }, [configUrl, botId, theme]);
   
-  // Create a div to render the chat button (instead of returning null)
-  return <div id="bp-web-widget" style={{ zIndex: 9999 }}></div>;
+  // Create a div to render the chat button
+  return <div id="bp-web-widget" className="bp-widget-web" style={{ zIndex: 9999 }}></div>;
 };
