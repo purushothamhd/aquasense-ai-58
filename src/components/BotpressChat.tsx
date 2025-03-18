@@ -3,25 +3,23 @@ import { useEffect, useState } from 'react';
 import { toast } from "@/hooks/use-toast";
 
 interface BotpressChatProps {
-  botId: string;
+  configUrl?: string;
+  botId?: string;
   theme?: 'light' | 'dark';
 }
 
-export const BotpressChat = ({ botId, theme = 'light' }: BotpressChatProps) => {
+export const BotpressChat = ({ 
+  configUrl = "https://files.bpcontent.cloud/2025/03/17/14/20250317141028-0N0SLFTL.json", 
+  botId, 
+  theme = 'light' 
+}: BotpressChatProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    // Don't try to load if botId is empty or placeholder
-    if (!botId || botId === 'YOUR_BOTPRESS_BOT_ID') {
-      console.warn('Invalid Botpress Bot ID provided.');
-      setHasError(true);
-      return;
-    }
-
     // Create script element for Botpress
     const script = document.createElement('script');
-    script.src = "https://cdn.botpress.cloud/webchat/v1/inject.js";
+    script.src = "https://cdn.botpress.cloud/webchat/v2.2/inject.js";
     script.async = true;
     
     // Handle loading errors
@@ -42,18 +40,8 @@ export const BotpressChat = ({ botId, theme = 'light' }: BotpressChatProps) => {
       try {
         // @ts-ignore - Botpress adds window.botpressWebChat
         window.botpressWebChat.init({
-          botId: botId,
-          hostUrl: "https://cdn.botpress.cloud/webchat/v1",
-          messagingUrl: "https://messaging.botpress.cloud",
-          clientId: botId,
-          stylesheet: 'https://cdn.botpress.cloud/webchat/v1/standard.css',
-          botName: 'AquaGuardian Assistant',
-          avatarUrl: 'https://cdn-icons-png.flaticon.com/512/4233/4233830.png',
-          botConversationDescription: 'Water quality assistance & information',
-          useSessionStorage: true,
+          configUrl: configUrl,
           theme: theme,
-          showConversationsButton: false,
-          enableTranscriptDownload: false,
         });
         setIsLoaded(true);
       } catch (error) {
@@ -83,7 +71,7 @@ export const BotpressChat = ({ botId, theme = 'light' }: BotpressChatProps) => {
         }
       }
     };
-  }, [botId, theme]);
+  }, [configUrl, theme]);
   
   return null; // This component doesn't render anything itself
 };

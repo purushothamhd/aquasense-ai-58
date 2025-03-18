@@ -11,10 +11,6 @@ import { BotpressChat } from "@/components/BotpressChat";
 import { SensorHistory } from "@/components/SensorHistory";
 import { Button } from "@/components/ui/button";
 
-// You should replace this with your actual Botpress bot ID
-// This is a fallback value for demo/development purposes only
-const BOTPRESS_BOT_ID = "a7e86c2a-c9bd-4429-a039-8e9d4b69f938"; 
-
 const Index = () => {
   const { data, history, fetchData, updateData, status } = useSensorStore();
   const [testCount, setTestCount] = useState(() => {
@@ -147,8 +143,8 @@ const Index = () => {
         </div>
       </div>
       
-      {/* Botpress Chat Integration */}
-      <BotpressChat botId={BOTPRESS_BOT_ID} />
+      {/* Updated Botpress Chat Integration with config URL */}
+      <BotpressChat configUrl="https://files.bpcontent.cloud/2025/03/17/14/20250317141028-0N0SLFTL.json" />
     </div>
   );
 };
