@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { SensorReadings } from "@/components/SensorReadings";
@@ -75,7 +76,7 @@ const Index = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Droplet className="h-8 w-8 text-blue-500" />
-          <h1 className="text-2xl font-bold">AquaGuardian</h1>
+          <h1 className="text-2xl font-bold">AquaSense AI</h1>
         </div>
         <Button 
           onClick={handleTakeReading} 
