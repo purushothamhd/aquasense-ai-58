@@ -1,3 +1,4 @@
+
 import { SensorData } from "@/services/sensorApi";
 import { GeminiAnalysisResponse, GeminiApiOptions } from "./types";
 import { extractJsonFromString } from "./utils";
@@ -8,7 +9,7 @@ export const callGeminiApi = async (
   options: GeminiApiOptions = {}
 ): Promise<GeminiAnalysisResponse> => {
   try {
-    const API_KEY = "YOUR_GEMINI_API_KEY"; // Replace with your actual API key or use environment variables
+    const API_KEY = "AIzaSyAhMFjgcLwrpwN2TbQpVG873zughJTAw8k"; // Hackathon demo API key
     const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
     
     // If we have a custom prompt (for chat), use that instead of the analysis prompt
