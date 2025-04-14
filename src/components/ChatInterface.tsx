@@ -24,6 +24,7 @@ export const ChatInterface = ({ sensorData }: ChatInterfaceProps) => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [initialAnalysisLoaded, setInitialAnalysisLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Load initial analysis when component mounts
@@ -40,6 +41,7 @@ export const ChatInterface = ({ sensorData }: ChatInterfaceProps) => {
   
   const loadInitialAnalysis = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const analysis = await analyzeSensorDataWithGemini(sensorData);
       
@@ -55,11 +57,20 @@ export const ChatInterface = ({ sensorData }: ChatInterfaceProps) => {
       setInitialAnalysisLoaded(true);
     } catch (error) {
       console.error("Failed to load initial analysis:", error);
+      setError("Could not generate water quality analysis. Please try again.");
       toast({
         title: "Analysis Error",
         description: "Could not generate water quality analysis. Please try again.",
         variant: "destructive",
       });
+      
+      // Add error message to chat
+      setMessages([
+        {
+          role: "assistant",
+          content: "I'm sorry, I encountered an error while analyzing your water quality data. This might be due to a connection issue or a problem with the Gemini API. You can try asking me a question or click the refresh button to try again."
+        }
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -73,14 +84,14 @@ export const ChatInterface = ({ sensorData }: ChatInterfaceProps) => {
 
 ### Water Status: ${qualityStatus} (Quality Score: ${analysis.qualityScore}/100)
 
-${analysis.pros.map(pro => `- ✅ ${pro}`).join('\\n')}
-${analysis.cons.map(con => `- ❌ ${con}`).join('\\n')}
+${analysis.pros.map(pro => `- ✅ ${pro}`).join('\n')}
+${analysis.cons.map(con => `- ❌ ${con}`).join('\n')}
 
 ### Health Implications:
-${analysis.healthImplications.map(health => `- ⚠️ ${health}`).join('\\n')}
+${analysis.healthImplications.map(health => `- ⚠️ ${health}`).join('\n')}
 
 ### Recommendations:
-${analysis.recommendations.map(rec => `- 📋 ${rec}`).join('\\n')}
+${analysis.recommendations.map(rec => `- 📋 ${rec}`).join('\n')}
 
 You can ask me follow-up questions about your water quality.
     `;
@@ -92,6 +103,7 @@ You can ask me follow-up questions about your water quality.
     
     const userMessage = input.trim();
     setInput("");
+    setError(null);
     
     // Add user message to chat
     setMessages(prev => [...prev, { role: "user", content: userMessage }]);
@@ -125,6 +137,8 @@ Include specific insights related to the user's question, potential health impli
       }]);
     } catch (error) {
       console.error("Chat error:", error);
+      setError("Could not process your message. Please try again.");
+      
       toast({
         title: "Chat Error",
         description: "Could not process your message. Please try again.",
@@ -134,7 +148,7 @@ Include specific insights related to the user's question, potential health impli
       // Add error message to chat
       setMessages(prev => [...prev, { 
         role: "assistant", 
-        content: "I'm sorry, I encountered an error while processing your question. Please try again." 
+        content: "I apologize, but I'm having trouble connecting to my knowledge base. This might be a temporary issue. Please try asking again in a moment, or refresh the chat." 
       }]);
     } finally {
       setIsLoading(false);
@@ -144,6 +158,7 @@ Include specific insights related to the user's question, potential health impli
   const resetChat = () => {
     setMessages([]);
     setInitialAnalysisLoaded(false);
+    setError(null);
     loadInitialAnalysis();
   };
   
@@ -189,33 +204,41 @@ Include specific insights related to the user's question, potential health impli
               <Skeleton className="h-4 w-[280px]" />
             </div>
           ) : (
-            messages.map((message, index) => (
-              <div 
-                key={index} 
-                className={`mb-4 ${
-                  message.role === "assistant" 
-                    ? "bg-muted/50 rounded-lg p-3"
-                    : ""
-                }`}
-              >
-                <div className="flex items-start">
-                  <div className={`mt-0.5 mr-2 rounded-full p-1 ${
+            <>
+              {error && messages.length === 0 && (
+                <div className="p-4 mb-4 text-amber-800 bg-amber-50 rounded-md">
+                  <p className="font-medium">Connection error</p>
+                  <p className="text-sm">Unable to connect to the AI service. Please try refreshing the chat.</p>
+                </div>
+              )}
+              {messages.map((message, index) => (
+                <div 
+                  key={index} 
+                  className={`mb-4 ${
                     message.role === "assistant" 
-                      ? "bg-blue-100 text-blue-500" 
-                      : "bg-green-100 text-green-500"
-                  }`}>
-                    {message.role === "assistant" ? (
-                      <Bot className="h-4 w-4" />
-                    ) : (
-                      <User className="h-4 w-4" />
-                    )}
-                  </div>
-                  <div className="flex-1 prose prose-sm max-w-none">
-                    {renderMessageContent(message.content)}
+                      ? "bg-muted/50 rounded-lg p-3"
+                      : ""
+                  }`}
+                >
+                  <div className="flex items-start">
+                    <div className={`mt-0.5 mr-2 rounded-full p-1 ${
+                      message.role === "assistant" 
+                        ? "bg-blue-100 text-blue-500" 
+                        : "bg-green-100 text-green-500"
+                    }`}>
+                      {message.role === "assistant" ? (
+                        <Bot className="h-4 w-4" />
+                      ) : (
+                        <User className="h-4 w-4" />
+                      )}
+                    </div>
+                    <div className="flex-1 prose prose-sm max-w-none">
+                      {renderMessageContent(message.content)}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </>
           )}
           <div ref={messagesEndRef} />
         </div>

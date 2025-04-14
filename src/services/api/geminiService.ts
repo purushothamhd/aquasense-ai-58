@@ -1,4 +1,3 @@
-
 import { SensorData } from "@/services/sensorApi";
 import { GeminiAnalysisResponse, GeminiApiOptions } from "./types";
 import { extractJsonFromString } from "./utils";
@@ -56,13 +55,27 @@ export const callGeminiApi = async (
     });
     
     if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.statusText}`);
+      console.error(`Gemini API error: Status ${response.status}`);
+      const errorText = await response.text();
+      console.error(`Error details: ${errorText}`);
+      throw new Error(`Gemini API error: Status ${response.status}`);
     }
     
     const data = await response.json();
     
+    // Check if the response has the expected structure
+    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts) {
+      console.error("Unexpected API response structure:", JSON.stringify(data));
+      throw new Error("Invalid Gemini API response structure");
+    }
+    
     // Extract the text from the Gemini response
     const responseText = data.candidates[0].content.parts[0].text;
+    
+    if (!responseText) {
+      console.error("Empty response text from Gemini API");
+      throw new Error("Empty response from Gemini API");
+    }
     
     // If this was a chat request, return the response directly
     if (options.customPrompt) {
@@ -78,18 +91,24 @@ export const callGeminiApi = async (
       };
     }
     
-    // Otherwise parse the JSON response for water analysis
-    const jsonResponse = extractJsonFromString(responseText);
-    
-    return {
-      qualityScore: jsonResponse.qualityScore || 50,
-      status: jsonResponse.status || 'moderate',
-      pros: jsonResponse.pros || [],
-      cons: jsonResponse.cons || [],
-      recommendations: jsonResponse.recommendations || [],
-      isHealthy: jsonResponse.isHealthy || false,
-      healthImplications: jsonResponse.healthImplications || []
-    };
+    try {
+      // Otherwise parse the JSON response for water analysis
+      const jsonResponse = extractJsonFromString(responseText);
+      
+      return {
+        qualityScore: jsonResponse.qualityScore || 50,
+        status: jsonResponse.status || 'moderate',
+        pros: jsonResponse.pros || [],
+        cons: jsonResponse.cons || [],
+        recommendations: jsonResponse.recommendations || [],
+        isHealthy: jsonResponse.isHealthy || false,
+        healthImplications: jsonResponse.healthImplications || []
+      };
+    } catch (jsonError) {
+      console.error("Failed to parse JSON from response:", jsonError);
+      console.error("Response text:", responseText);
+      throw new Error("Failed to parse Gemini API response");
+    }
   } catch (error) {
     console.error("Error analyzing data with Gemini:", error);
     // Fallback to local analysis if Gemini API fails
