@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Send, Bot, User, RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -7,6 +6,8 @@ import { SensorData } from "@/services/sensorApi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { generateGeminiResponse } from "@/services/geminiApi";
+import { toast } from "@/hooks/use-toast";
 
 interface Message {
   role: "user" | "assistant";
@@ -174,15 +175,39 @@ You can ask me follow-up questions about your water quality.
     // Show loading state
     setIsLoading(true);
     
-    // Short timeout to simulate thinking
-    setTimeout(() => {
-      // Generate response based on user's question and sensor data
-      const response = generateResponse(userMessage, sensorData);
+    try {
+      // Call Gemini API
+      const response = await generateGeminiResponse(userMessage, sensorData);
       
-      // Add AI response to chat
-      setMessages(prev => [...prev, { role: "assistant", content: response }]);
+      if (response.error) {
+        console.error("Gemini API error:", response.error);
+        toast({
+          title: "Connection Issue",
+          description: "Had trouble connecting to the AI service. Using local analysis instead.",
+          variant: "destructive",
+        });
+        
+        // Fallback to local response generator if API fails
+        const fallbackResponse = generateResponse(userMessage, sensorData);
+        setMessages(prev => [...prev, { role: "assistant", content: fallbackResponse }]);
+      } else {
+        // Add AI response to chat
+        setMessages(prev => [...prev, { role: "assistant", content: response.content }]);
+      }
+    } catch (error) {
+      console.error("Error in chat processing:", error);
+      // Fallback to local response generator
+      const fallbackResponse = generateResponse(userMessage, sensorData);
+      setMessages(prev => [...prev, { role: "assistant", content: fallbackResponse }]);
+      
+      toast({
+        title: "Processing Error",
+        description: "Something went wrong. Using local analysis instead.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
   
   const generateResponse = (question: string, data: SensorData): string => {
