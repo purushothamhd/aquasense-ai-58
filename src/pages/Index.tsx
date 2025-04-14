@@ -2,20 +2,16 @@
 import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { SensorReadings } from "@/components/SensorReadings";
-import { AchievementBadges } from "@/components/AchievementBadges";
 import { WaterAnalysis } from "@/components/WaterAnalysis";
 import { SensorData, useSensorStore } from "@/services/sensorApi";
 import { toast } from "@/hooks/use-toast";
 import { Droplet, TestTube } from "lucide-react";
 import { SensorHistory } from "@/components/SensorHistory";
 import { Button } from "@/components/ui/button";
+import { ChatInterface } from "@/components/ChatInterface";
 
 const Index = () => {
   const { data, history, fetchData, updateData, status } = useSensorStore();
-  const [testCount, setTestCount] = useState(() => {
-    const saved = localStorage.getItem('waterTestCount');
-    return saved ? parseInt(saved, 0) : 0;
-  });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isReading, setIsReading] = useState(false);
   
@@ -32,9 +28,6 @@ const Index = () => {
   
   const handleAnalyze = () => {
     setIsAnalyzing(true);
-    const newCount = testCount + 1;
-    setTestCount(newCount);
-    localStorage.setItem('waterTestCount', newCount.toString());
     
     setTimeout(() => {
       setIsAnalyzing(false);
@@ -108,17 +101,6 @@ const Index = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-6">
           <div className="space-y-2">
-            <h2 className="text-xl font-semibold">Your Achievements</h2>
-            <p className="text-muted-foreground">
-              Badges earned through regular water testing
-            </p>
-          </div>
-          
-          <AchievementBadges testCount={testCount} />
-        </div>
-        
-        <div className="space-y-6">
-          <div className="space-y-2">
             <h2 className="text-xl font-semibold">Water Analysis</h2>
             <p className="text-muted-foreground">
               Get insights and recommendations for your water quality
@@ -131,6 +113,12 @@ const Index = () => {
               onAnalyze={handleAnalyze}
               isAnalyzing={isAnalyzing}
             />
+          )}
+        </div>
+        
+        <div className="space-y-6">
+          {status === 'success' && (
+            <ChatInterface sensorData={data} />
           )}
         </div>
       </div>
