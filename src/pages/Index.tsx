@@ -9,7 +9,6 @@ import { toast } from "@/hooks/use-toast";
 import { Droplet, TestTube } from "lucide-react";
 import { SensorHistory } from "@/components/SensorHistory";
 import { Button } from "@/components/ui/button";
-import { ChatInterface } from "@/components/ChatInterface";
 
 const Index = () => {
   const { data, history, fetchData, updateData, status } = useSensorStore();
@@ -135,12 +134,6 @@ const Index = () => {
           )}
         </div>
       </div>
-      
-      {status === 'success' && (
-        <div className="mt-6">
-          <ChatInterface sensorData={data} />
-        </div>
-      )}
     </div>
   );
 };
